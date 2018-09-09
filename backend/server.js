@@ -1,5 +1,8 @@
 import express from 'express';
-var MongoClient = require('mongodb').MongoClient;
+import mongodb from 'mongodb';
+var ObjectId = mongodb.ObjectID
+var MongoClient = mongodb.MongoClient;
+
 import bodyParser from 'body-parser';
 
 const app = express();
@@ -44,6 +47,40 @@ MongoClient.connect('mongodb://localhost:27017/animals', function (err, client) 
         }else{
             res.status(400).json({ errors });
         }
+    });
+    app.get('/api/games/:_id',(req,res) => {
+       const object_Id = new ObjectId(req.params._id);
+
+
+        db.collection('games').findOne({_id:object_Id },(err,game)=>{
+            res.json({game})
+        });
+    });
+    app.put('/api/games/:_id',(req,res) => {
+        const { errors, isValid}  = validate(req.body);
+        const object_Id = new ObjectId(req.params._id);
+        if(isValid){
+            const { title, cover } = req.body;
+            db.collection('games').findOneAndUpdate(
+                {_id: object_Id},
+                { $set:{ title, cover } },
+                {returnOriginal: false},
+                (err,result) => {
+                    if(err) {res.status(500).json({ errors: {global: err}}); return; }
+                    res.json({ game: result.value   });
+                }
+            )
+        }else{
+            res.status(400).json({errors});
+        }
+
+    });
+    app.delete('/api/games/:_id',(req,res) => {
+        const object_Id = new ObjectId(req.params._id);
+        db.collection('games').deleteOne ({_id:object_Id },(err,r)=>{
+            if(err) {res.status(500).json({ errors: {global: err}}); return; }
+            res.json({})
+        });
     });
     app.use((req,res) => {
         res.status(404).json({

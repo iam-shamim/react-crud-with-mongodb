@@ -1,17 +1,23 @@
 import React,{Component} from "react";
 import classnames from 'classnames'
-import { connect } from 'react-redux';
-import { Redirect } from 'react-router-dom';
-import { saveGame } from './actions';
+
 
 class GameForm extends Component{
     state = {
-        title: '',
-        cover: '',
+        _id: this.props.game? this.props.game._id:null,
+        title: this.props.game? this.props.game.title:'',
+        cover: this.props.game? this.props.game.cover:'',
         errors: {},
         loading: false,
-        done: false,
     };
+    componentWillReceiveProps = (nextProps) =>{
+      this.setState({
+         _id: nextProps.game._id,
+          title: nextProps.game.title,
+          cover: nextProps.game.cover,
+      });
+    };
+
     handleChange = (e) => {
         if(!!this.state.errors[e.target.name]){
             let errors = Object.assign({},this.state.errors);
@@ -29,24 +35,19 @@ class GameForm extends Component{
 
         // validation
         let errors = {};
-        if(this.state.title == '') errors.title = "Can't be empty";
-        if(this.state.cover == '') errors.cover = "Can't be empty";
+        if(this.state.title === '') errors.title = "Can't be empty";
+        if(this.state.cover === '') errors.cover = "Can't be empty";
         this.setState({errors});
         const isValid = Object.keys(errors).length === 0;
 
         if(isValid){
-            const { title, cover } = this.state;
             this.setState({loading: true});
-            this.props.saveGame({title, cover}).then(
-                () => { this.setState({ done: true, loading:false }) },
-                (err) => err.response.json().then(({errors})=>this.setState({errors,loading:false}))
-            );
+            this.props.saveGame({_id:this.state._id, title: this.state.title, cover: this.state.cover})
+                .catch((err) => err.response.json().then(({errors})=>this.setState({errors,loading:false})));
+
         }
     };
     render(){
-        if(this.state.done){
-            return <Redirect to="/games" />
-        }
         return(
             <div>
                 <form className={classnames('ui','form',{loading: this.state.loading})} onSubmit={this.hanleSubmit}>
@@ -88,4 +89,4 @@ class GameForm extends Component{
         );
     }
 }
-export default connect(null,{ saveGame })(GameForm);
+export default GameForm;

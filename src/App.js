@@ -1,9 +1,8 @@
 import React, { Component } from 'react';
-import logo from './logo.svg';
 import './App.css';
 import { NavLink, Route, Switch } from 'react-router-dom'
 import GamesPage from './GamesPage'
-import GameForm from './GameForm'
+import GameFormPage from './GameFormPage'
 
 class App extends Component {
   render() {
@@ -16,8 +15,9 @@ class App extends Component {
           </div>
 
           <Switch>
-              <Route path="/games/new" component={GameForm}/>
-              <Route path="/games" component={GamesPage}/>
+              <Route path="/games/new" component={GameFormPage}/>
+              <Route path="/games" exact component={GamesPage}/>
+              <Route path="/games/:_id" component={GameFormPage}/>
           </Switch>
       </div>
     );
